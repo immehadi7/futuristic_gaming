@@ -1,8 +1,8 @@
 import React, { useState, useRef } from "react";
 import { Container } from "react-bootstrap";
+import CheckoutModal from "./checkout/CheckoutModal";
 import "./GameCards.css";
 
-// Chinese translations map by game id
 const ZH = {
   1: { name: "王者荣耀", genre: "多人在线竞技", badge: "热门" },
   2: { name: "和平精英", genre: "大逃杀射击", badge: "精选" },
@@ -18,12 +18,13 @@ const ZH = {
   12: { name: "崩坏：星穹铁道", genre: "回合制RPG", badge: "新品" },
 };
 
-// Discount prices
 const getDiscount = (price) => Math.round(price * 0.7);
 
 export default function GameCards({ games = [], searchTerm = "" }) {
   const [cart, setCart] = useState([]);
   const [cartOpen, setCartOpen] = useState(false);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [playingId, setPlayingId] = useState(null);
   const [notification, setNotification] = useState(null);
   const audioRef = useRef(null);
@@ -31,13 +32,11 @@ export default function GameCards({ games = [], searchTerm = "" }) {
   const addToCart = (game) => {
     setCart((prev) => {
       const exists = prev.find((c) => c.id === game.id);
-
       if (exists) {
         return prev.map((c) =>
           c.id === game.id ? { ...c, qty: c.qty + 1 } : c
         );
       }
-
       return [...prev, { ...game, qty: 1 }];
     });
 
@@ -56,22 +55,63 @@ export default function GameCards({ games = [], searchTerm = "" }) {
       return;
     }
 
-    if (audioRef.current) {
-      audioRef.current.pause();
-    }
+    if (audioRef.current) audioRef.current.pause();
 
     const audio = new Audio(game.audio);
     audioRef.current = audio;
     audio.play();
     setPlayingId(game.id);
-
     audio.onended = () => setPlayingId(null);
   };
 
-  // Build sections from prop data
+  const handleCheckout = async () => {
+    try {
+      setCheckoutLoading(true);
+
+      const payload = {
+        items: cart.map((item) => ({
+          id: item.id,
+          name: item.name,
+          qty: item.qty,
+          price: item.price,
+        })),
+        amount: cartTotal,
+        currency: "CNY",
+      };
+
+      const res = await fetch("http://localhost:5000/api/payments/alipay/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "创建支付订单失败");
+      }
+
+      if (data.redirectUrl) {
+        window.location.href = data.redirectUrl;
+        return;
+      }
+
+      alert("支付链接未返回");
+    } catch (error) {
+      console.error(error);
+      alert(error.message || "支付发起失败");
+    } finally {
+      setCheckoutLoading(false);
+    }
+  };
+
   const discountGames = games.slice(0, 4);
   const allGames = games;
-  const popularGames = games.filter((_, i) => [0, 1, 2, 3, 4, 5, 9, 10, 11].includes(i)).slice(0, 4);
+  const popularGames = games
+    .filter((_, i) => [0, 1, 2, 3, 4, 5, 9, 10, 11].includes(i))
+    .slice(0, 4);
 
   const cartTotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
   const cartCount = cart.reduce((sum, item) => sum + item.qty, 0);
@@ -109,18 +149,6 @@ export default function GameCards({ games = [], searchTerm = "" }) {
               onClick={() => toggleAudio(game)}
               title="收听描述"
             >
-              {isPlaying ? (
-                <span className="gc-audio-bars">
-                  <span />
-                  <span />
-                  <span />
-                  <span />
-                </span>
-              ) : (
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
-                </svg>
-              )}
               <span>{isPlaying ? "播放中" : "语音"}</span>
             </button>
           </div>
@@ -138,15 +166,6 @@ export default function GameCards({ games = [], searchTerm = "" }) {
           </div>
 
           <button className="gc-add-btn" onClick={() => addToCart(game)}>
-            <svg
-              width="13"
-              height="13"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              style={{ marginRight: 6 }}
-            >
-              <path d="M11 9h2V6h3V4h-3V1h-2v3H8v2h3v3zm-4 9c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2zm-8.9-5h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0 0 19 4H5.21L4.27 2H1v2h2l3.6 7.59-1.35 2.44C4.52 15.37 5.48 17 7 17h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63z" />
-            </svg>
             加入购物车
           </button>
         </div>
@@ -162,9 +181,6 @@ export default function GameCards({ games = [], searchTerm = "" }) {
       {notification && <div className="gc-toast">{notification}</div>}
 
       <button className="gc-cart-btn" onClick={() => setCartOpen(true)}>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2zm-8.9-5h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0 0 19 4H5.21L4.27 2H1v2h2l3.6 7.59-1.35 2.44C4.52 15.37 5.48 17 7 17h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63z" />
-        </svg>
         购物车
         {cartCount > 0 && <span className="gc-cart-count">{cartCount}</span>}
       </button>
@@ -187,10 +203,6 @@ export default function GameCards({ games = [], searchTerm = "" }) {
                       src={c.image}
                       alt={ZH[c.id]?.name || c.name}
                       className="gc-cart-item-img"
-                      onError={(e) => {
-                        e.target.src =
-                          "https://via.placeholder.com/48/0a0f1e/00f5ff?text=G";
-                      }}
                     />
                     <div className="gc-cart-item-info">
                       <p className="gc-cart-item-name">{ZH[c.id]?.name || c.name}</p>
@@ -198,10 +210,7 @@ export default function GameCards({ games = [], searchTerm = "" }) {
                         ¥{c.price} × {c.qty}
                       </p>
                     </div>
-                    <button
-                      className="gc-cart-remove"
-                      onClick={() => removeFromCart(c.id)}
-                    >
+                    <button className="gc-cart-remove" onClick={() => removeFromCart(c.id)}>
                       ✕
                     </button>
                   </div>
@@ -212,19 +221,34 @@ export default function GameCards({ games = [], searchTerm = "" }) {
                   <span className="gc-total-price">¥{cartTotal}</span>
                 </div>
 
-                <button className="gc-checkout-btn">立即结算</button>
+                <button
+                  className="gc-checkout-btn"
+                  onClick={() => {
+                    setCartOpen(false);
+                    setCheckoutOpen(true);
+                  }}
+                >
+                  去结算
+                </button>
               </>
             )}
           </div>
         </div>
       )}
 
+      <CheckoutModal
+        isOpen={checkoutOpen}
+        onClose={() => setCheckoutOpen(false)}
+        cart={cart}
+        total={cartTotal}
+        onCheckout={handleCheckout}
+        loading={checkoutLoading}
+      />
+
       <Container fluid="xl" className="gc-container">
         <div className="gc-page-head">
           <p className="gc-eyebrow">// 游戏商城</p>
-          <h1 className="gc-page-title" data-text="折扣游戏产品">
-            折扣游戏产品
-          </h1>
+          <h1 className="gc-page-title">折扣游戏产品</h1>
           <div className="gc-title-bar" />
         </div>
 

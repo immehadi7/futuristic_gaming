@@ -3,11 +3,15 @@ import { Navbar, Nav, Container, Form, InputGroup, Button } from "react-bootstra
 import { Search, Gamepad2 } from "lucide-react";
 import "./MainNavbar.css";
 
-export default function MainNavbar({ games = [], onSearch }) {
+export default function MainNavbar({
+  games = [],
+  onSearch,
+  onOpenLogin,
+  onOpenRegister,
+}) {
   const [searchTerm, setSearchTerm] = useState("");
   const [showResults, setShowResults] = useState(false);
 
-  // Search by game name, description, and price text
   const filteredResults = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
 
@@ -72,10 +76,10 @@ export default function MainNavbar({ games = [], onSearch }) {
 
         <Navbar.Collapse id="main-navbar-nav">
           <Nav className="mx-auto align-items-lg-center gap-lg-3 nav-center-links">
-            <Nav.Link href="#home" className="nav-link-futuristic">Home</Nav.Link>
-            <Nav.Link href="#popular-games" className="nav-link-futuristic">All Popular Games</Nav.Link>
-            <Nav.Link href="#contact-us" className="nav-link-futuristic">Contact Us</Nav.Link>
-            <Nav.Link href="#live-chat" className="nav-link-futuristic">Live Chat</Nav.Link>
+            <Nav.Link href="#home" className="nav-link-futuristic">首页</Nav.Link>
+            <Nav.Link href="#popular-games" className="nav-link-futuristic">热门游戏</Nav.Link>
+            <Nav.Link href="#contact-us" className="nav-link-futuristic">联系我们</Nav.Link>
+            <Nav.Link href="#live-chat" className="nav-link-futuristic">在线客服</Nav.Link>
           </Nav>
 
           <div className="d-flex align-items-lg-center flex-column flex-lg-row gap-3 position-relative navbar-right-area">
@@ -87,7 +91,7 @@ export default function MainNavbar({ games = [], onSearch }) {
 
                 <Form.Control
                   type="text"
-                  placeholder="Search game name, price, keyword..."
+                  placeholder="搜索游戏、类型、价格..."
                   value={searchTerm}
                   onChange={handleSearchChange}
                   onFocus={() => setShowResults(true)}
@@ -118,14 +122,19 @@ export default function MainNavbar({ games = [], onSearch }) {
                       </button>
                     ))
                   ) : (
-                    <div className="search-no-result">No matching game found</div>
+                    <div className="search-no-result">没有找到匹配的游戏</div>
                   )}
                 </div>
               )}
             </div>
 
-            <Button className="nav-btn-login">Login</Button>
-            <Button className="nav-btn-register">Register</Button>
+            <Button className="nav-btn-login" onClick={onOpenLogin}>
+              登录
+            </Button>
+
+            <Button className="nav-btn-register" onClick={onOpenRegister}>
+              注册
+            </Button>
           </div>
         </Navbar.Collapse>
       </Container>
