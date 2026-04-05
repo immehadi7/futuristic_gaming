@@ -1,7 +1,13 @@
-import React, { useState, useRef } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { Container } from "react-bootstrap";
-import CheckoutModal from "./checkout/CheckoutModal";
+import { useNavigate } from "react-router-dom";
 import "./GameCards.css";
+import {
+  addToCart as addItemToCart,
+  getCartItems,
+  removeCartItem,
+  updateCartItemQuantity,
+} from "../utils/cart";
 
 const ZH = {
   1: { name: "王者荣耀", genre: "多人在线竞技", badge: "热门" },
@@ -21,108 +27,121 @@ const ZH = {
 const getDiscount = (price) => Math.round(price * 0.7);
 
 export default function GameCards({ games = [], searchTerm = "" }) {
-  const [cart, setCart] = useState([]);
-  const [cartOpen, setCartOpen] = useState(false);
-  const [checkoutOpen, setCheckoutOpen] = useState(false);
-  const [checkoutLoading, setCheckoutLoading] = useState(false);
-  const [playingId, setPlayingId] = useState(null);
-  const [notification, setNotification] = useState(null);
+  const navigate = useNavigate();
   const audioRef = useRef(null);
 
-  const addToCart = (game) => {
-    setCart((prev) => {
-      const exists = prev.find((c) => c.id === game.id);
-      if (exists) {
-        return prev.map((c) =>
-          c.id === game.id ? { ...c, qty: c.qty + 1 } : c
-        );
-      }
-      return [...prev, { ...game, qty: 1 }];
-    });
+  const [cart, setCart] = useState(getCartItems());
+  const [cartOpen, setCartOpen] = useState(false);
+  const [playingId, setPlayingId] = useState(null);
+  const [notification, setNotification] = useState(null);
 
-    setNotification(`"${ZH[game.id]?.name || game.name}" 已加入购物车`);
+  const showToast = (message) => {
+    setNotification(message);
     setTimeout(() => setNotification(null), 2200);
   };
 
-  const removeFromCart = (id) => {
-    setCart((prev) => prev.filter((c) => c.id !== id));
+  const syncCart = () => {
+    setCart(getCartItems());
+  };
+
+  const handleAddToCart = (game) => {
+    addItemToCart({
+      id: game.id,
+      name: ZH[game.id]?.name || game.name,
+      description: game.description || "",
+      price: Number(game.price) || 0,
+      image: game.image || "",
+      quantity: 1,
+    });
+
+    syncCart();
+    showToast(`"${ZH[game.id]?.name || game.name}" 已加入购物车`);
+  };
+
+  const handleBuyNow = (game) => {
+    addItemToCart({
+      id: game.id,
+      name: ZH[game.id]?.name || game.name,
+      description: game.description || "",
+      price: Number(game.price) || 0,
+      image: game.image || "",
+      quantity: 1,
+    });
+
+    syncCart();
+    navigate("/checkout");
+  };
+
+  const handleRemoveFromCart = (id) => {
+    removeCartItem(id);
+    syncCart();
+  };
+
+  const handleIncreaseQty = (id) => {
+    const item = cart.find((c) => String(c.id) === String(id));
+    if (!item) return;
+
+    updateCartItemQuantity(id, Number(item.quantity || 1) + 1);
+    syncCart();
+  };
+
+  const handleDecreaseQty = (id) => {
+    const item = cart.find((c) => String(c.id) === String(id));
+    if (!item) return;
+
+    const nextQty = Math.max(1, Number(item.quantity || 1) - 1);
+    updateCartItemQuantity(id, nextQty);
+    syncCart();
   };
 
   const toggleAudio = (game) => {
+    if (!game.audio) {
+      showToast("当前游戏没有语音介绍");
+      return;
+    }
+
     if (playingId === game.id) {
       audioRef.current?.pause();
       setPlayingId(null);
       return;
     }
 
-    if (audioRef.current) audioRef.current.pause();
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
 
     const audio = new Audio(game.audio);
     audioRef.current = audio;
     audio.play();
     setPlayingId(game.id);
+
     audio.onended = () => setPlayingId(null);
   };
 
-  const handleCheckout = async () => {
-    try {
-      setCheckoutLoading(true);
-
-      const payload = {
-        items: cart.map((item) => ({
-          id: item.id,
-          name: item.name,
-          qty: item.qty,
-          price: item.price,
-        })),
-        amount: cartTotal,
-        currency: "CNY",
-      };
-
-      const res = await fetch("http://localhost:5000/api/payments/alipay/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "创建支付订单失败");
-      }
-
-      if (data.redirectUrl) {
-        window.location.href = data.redirectUrl;
-        return;
-      }
-
-      alert("支付链接未返回");
-    } catch (error) {
-      console.error(error);
-      alert(error.message || "支付发起失败");
-    } finally {
-      setCheckoutLoading(false);
-    }
-  };
-
-  const discountGames = games.slice(0, 4);
+  const discountGames = useMemo(() => games.slice(0, 4), [games]);
   const allGames = games;
-  const popularGames = games
-    .filter((_, i) => [0, 1, 2, 3, 4, 5, 9, 10, 11].includes(i))
-    .slice(0, 4);
+  const popularGames = useMemo(
+    () => games.filter((_, i) => [0, 1, 2, 3, 4, 5, 9, 10, 11].includes(i)).slice(0, 4),
+    [games]
+  );
 
-  const cartTotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
-  const cartCount = cart.reduce((sum, item) => sum + item.qty, 0);
+  const cartTotal = cart.reduce(
+    (sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 1),
+    0
+  );
+
+  const cartCount = cart.reduce(
+    (sum, item) => sum + Number(item.quantity || 1),
+    0
+  );
 
   const renderCard = (game, variant = "normal") => {
     const zh = ZH[game.id] || {};
     const isPlaying = playingId === game.id;
-    const discountPrice = getDiscount(game.price);
+    const discountPrice = getDiscount(Number(game.price) || 0);
 
     return (
-      <div key={game.id} className={`gc-card gc-card--${variant}`}>
+      <div key={`${variant}-${game.id}`} className={`gc-card gc-card--${variant}`}>
         <div className="gc-card-img-wrap">
           <img
             src={game.image}
@@ -145,6 +164,7 @@ export default function GameCards({ games = [], searchTerm = "" }) {
 
           <div className="gc-desc-row">
             <button
+              type="button"
               className={`gc-audio-btn ${isPlaying ? "playing" : ""}`}
               onClick={() => toggleAudio(game)}
               title="收听描述"
@@ -165,9 +185,23 @@ export default function GameCards({ games = [], searchTerm = "" }) {
             )}
           </div>
 
-          <button className="gc-add-btn" onClick={() => addToCart(game)}>
-            加入购物车
-          </button>
+          <div className="gc-action-row">
+            <button
+              type="button"
+              className="gc-add-btn"
+              onClick={() => handleAddToCart(game)}
+            >
+              加入购物车
+            </button>
+
+            <button
+              type="button"
+              className="gc-buy-btn"
+              onClick={() => handleBuyNow(game)}
+            >
+              立即购买
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -180,7 +214,11 @@ export default function GameCards({ games = [], searchTerm = "" }) {
 
       {notification && <div className="gc-toast">{notification}</div>}
 
-      <button className="gc-cart-btn" onClick={() => setCartOpen(true)}>
+      <button
+        type="button"
+        className="gc-cart-btn"
+        onClick={() => setCartOpen(true)}
+      >
         购物车
         {cartCount > 0 && <span className="gc-cart-count">{cartCount}</span>}
       </button>
@@ -190,7 +228,9 @@ export default function GameCards({ games = [], searchTerm = "" }) {
           <div className="gc-cart-drawer" onClick={(e) => e.stopPropagation()}>
             <div className="gc-cart-header">
               <h3>购物车 🛒</h3>
-              <button onClick={() => setCartOpen(false)}>✕</button>
+              <button type="button" onClick={() => setCartOpen(false)}>
+                ✕
+              </button>
             </div>
 
             {cart.length === 0 ? (
@@ -201,18 +241,74 @@ export default function GameCards({ games = [], searchTerm = "" }) {
                   <div key={c.id} className="gc-cart-item">
                     <img
                       src={c.image}
-                      alt={ZH[c.id]?.name || c.name}
+                      alt={c.name}
                       className="gc-cart-item-img"
+                      onError={(e) => {
+                        e.target.src =
+                          "https://via.placeholder.com/80x80/0a0f1e/00f5ff?text=游戏";
+                      }}
                     />
+
                     <div className="gc-cart-item-info">
-                      <p className="gc-cart-item-name">{ZH[c.id]?.name || c.name}</p>
-                      <p className="gc-cart-item-price">
-                        ¥{c.price} × {c.qty}
-                      </p>
+                      <p className="gc-cart-item-name">{c.name}</p>
+                      <p className="gc-cart-item-price">单价：¥{c.price}</p>
+
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                          marginTop: "8px",
+                        }}
+                      >
+                        <button
+                          type="button"
+                          className="gc-qty-btn"
+                          onClick={() => handleDecreaseQty(c.id)}
+                        >
+                          -
+                        </button>
+
+                        <span
+                          style={{
+                            minWidth: "28px",
+                            textAlign: "center",
+                            fontWeight: 700,
+                          }}
+                        >
+                          {c.quantity}
+                        </span>
+
+                        <button
+                          type="button"
+                          className="gc-qty-btn"
+                          onClick={() => handleIncreaseQty(c.id)}
+                        >
+                          +
+                        </button>
+                      </div>
                     </div>
-                    <button className="gc-cart-remove" onClick={() => removeFromCart(c.id)}>
-                      ✕
-                    </button>
+
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "flex-end",
+                        gap: "8px",
+                      }}
+                    >
+                      <span className="gc-total-price">
+                        ¥{Number(c.price) * Number(c.quantity)}
+                      </span>
+
+                      <button
+                        type="button"
+                        className="gc-cart-remove"
+                        onClick={() => handleRemoveFromCart(c.id)}
+                      >
+                        ✕
+                      </button>
+                    </div>
                   </div>
                 ))}
 
@@ -222,10 +318,11 @@ export default function GameCards({ games = [], searchTerm = "" }) {
                 </div>
 
                 <button
+                  type="button"
                   className="gc-checkout-btn"
                   onClick={() => {
                     setCartOpen(false);
-                    setCheckoutOpen(true);
+                    navigate("/checkout");
                   }}
                 >
                   去结算
@@ -235,15 +332,6 @@ export default function GameCards({ games = [], searchTerm = "" }) {
           </div>
         </div>
       )}
-
-      <CheckoutModal
-        isOpen={checkoutOpen}
-        onClose={() => setCheckoutOpen(false)}
-        cart={cart}
-        total={cartTotal}
-        onCheckout={handleCheckout}
-        loading={checkoutLoading}
-      />
 
       <Container fluid="xl" className="gc-container">
         <div className="gc-page-head">

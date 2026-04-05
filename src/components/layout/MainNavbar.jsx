@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Navbar, Nav, Container, Form, InputGroup, Button } from "react-bootstrap";
-import { Search, Gamepad2 } from "lucide-react";
+import { Search, Gamepad2, LogOut, UserCircle2, LayoutDashboard } from "lucide-react";
 import "./MainNavbar.css";
 
 export default function MainNavbar({
@@ -8,20 +8,23 @@ export default function MainNavbar({
   onSearch,
   onOpenLogin,
   onOpenRegister,
+  currentUser,
+  onLogout,
 }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [showResults, setShowResults] = useState(false);
 
+  const displayName =
+    currentUser?.username || currentUser?.name || currentUser?.email || "用户";
+
   const filteredResults = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
-
     if (!term) return [];
 
     return games.filter((game) => {
       const nameMatch = game.name?.toLowerCase().includes(term);
       const descriptionMatch = game.description?.toLowerCase().includes(term);
       const priceMatch = String(game.price).includes(term);
-
       return nameMatch || descriptionMatch || priceMatch;
     });
   }, [games, searchTerm]);
@@ -44,7 +47,6 @@ export default function MainNavbar({
       const nameMatch = game.name?.toLowerCase().includes(term);
       const descriptionMatch = game.description?.toLowerCase().includes(term);
       const priceMatch = String(game.price).includes(term);
-
       return nameMatch || descriptionMatch || priceMatch;
     });
 
@@ -115,7 +117,7 @@ export default function MainNavbar({
                         <div className="d-flex flex-column">
                           <span className="result-title">{game.name}</span>
                           <span className="result-desc">
-                            {game.description.slice(0, 55)}...
+                            {game.description?.slice(0, 55)}...
                           </span>
                         </div>
                         <span className="result-price">¥{game.price}</span>
@@ -128,13 +130,48 @@ export default function MainNavbar({
               )}
             </div>
 
-            <Button className="nav-btn-login" onClick={onOpenLogin}>
-              登录
-            </Button>
+            {currentUser ? (
+              <div className="d-flex align-items-center gap-2 flex-wrap">
+                <a href="/client-dashboard" style={{ textDecoration: "none" }}>
+                  <div
+                    className="d-flex align-items-center gap-2 px-3 py-2 rounded-pill"
+                    style={{
+                      background: "rgba(255,255,255,0.06)",
+                      border: "1px solid rgba(0,234,255,0.12)",
+                      color: "#fff",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <UserCircle2 size={18} color="#7df9ff" />
+                    <span style={{ fontWeight: 700 }}>{displayName}</span>
+                    <LayoutDashboard size={16} color="#7df9ff" />
+                  </div>
+                </a>
 
-            <Button className="nav-btn-register" onClick={onOpenRegister}>
-              注册
-            </Button>
+                <Button className="nav-btn-login" onClick={onLogout}>
+                  <LogOut size={16} style={{ marginRight: 6 }} />
+                  退出
+                </Button>
+              </div>
+            ) : (
+              <>
+                <Button
+                  type="button"
+                  className="nav-btn-login"
+                  onClick={onOpenLogin}
+                >
+                  登录
+                </Button>
+
+                <Button
+                  type="button"
+                  className="nav-btn-register"
+                  onClick={onOpenRegister}
+                >
+                  注册
+                </Button>
+              </>
+            )}
           </div>
         </Navbar.Collapse>
       </Container>
