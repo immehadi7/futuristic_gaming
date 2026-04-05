@@ -1,132 +1,235 @@
-import { UserCircle2, Mail, ShieldCheck, ShoppingBag } from "lucide-react";
+import { useMemo } from "react";
+import { getStoredUser } from "../utils/auth";
+import { getOrders } from "../utils/orders";
 
 export default function ClientDashboardPage() {
-  const savedUser = localStorage.getItem("user");
-  const user = savedUser ? JSON.parse(savedUser) : null;
+  const user = getStoredUser();
+  const orders = getOrders();
+
+  const totalSpent = useMemo(() => {
+    return orders.reduce((sum, order) => sum + Number(order.total || 0), 0);
+  }, [orders]);
+
+  const totalItems = useMemo(() => {
+    return orders.reduce((sum, order) => {
+      return (
+        sum +
+        order.items.reduce(
+          (itemSum, item) => itemSum + Number(item.quantity || 1),
+          0
+        )
+      );
+    }, 0);
+  }, [orders]);
 
   return (
     <div
       style={{
         minHeight: "100vh",
-        background: "#050816",
-        color: "white",
-        padding: "32px 20px",
+        background:
+          "radial-gradient(circle at top, rgba(0,234,255,0.08), transparent 20%), linear-gradient(180deg, #050816 0%, #09111f 45%, #050816 100%)",
+        color: "#fff",
+        position: "relative",
+        overflow: "hidden",
       }}
     >
       <div
         style={{
-          maxWidth: "1100px",
-          margin: "0 auto",
+          position: "absolute",
+          inset: 0,
+          backgroundImage:
+            "linear-gradient(rgba(0,234,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(0,234,255,0.04) 1px, transparent 1px)",
+          backgroundSize: "28px 28px",
+          pointerEvents: "none",
         }}
-      >
-        <div
-          style={{
-            marginBottom: "28px",
-          }}
-        >
+      />
+
+      <div className="container py-5" style={{ position: "relative", zIndex: 2 }}>
+        <div className="mb-4">
           <p
             style={{
-              color: "#7df9ff",
+              color: "#00eaff",
+              textTransform: "uppercase",
+              letterSpacing: "2px",
+              fontSize: "13px",
               marginBottom: "8px",
-              fontSize: "0.9rem",
             }}
           >
-            客户中心
+            Client Command Center
           </p>
 
-          <h1
-            style={{
-              fontSize: "2.2rem",
-              fontWeight: 800,
-              margin: 0,
-            }}
-          >
-            欢迎回来，{user?.username || "用户"}
-          </h1>
+          <h1 style={{ fontWeight: 900, marginBottom: "10px" }}>客户中心</h1>
 
-          <p
-            style={{
-              color: "rgba(220,235,255,0.72)",
-              marginTop: "10px",
-            }}
-          >
-            在这里你可以查看个人资料、订单、支付记录和账户状态。
+          <p style={{ color: "rgba(255,255,255,0.72)", marginBottom: 0 }}>
+            欢迎回来，{user?.username || user?.name || user?.email || "用户"}
           </p>
+        </div>
+
+        <div className="row g-4 mb-4">
+          <div className="col-md-4">
+            <div
+              style={{
+                borderRadius: "22px",
+                padding: "22px",
+                background:
+                  "linear-gradient(180deg, rgba(13,23,44,0.96), rgba(8,14,28,0.96))",
+                border: "1px solid rgba(0,234,255,0.12)",
+                boxShadow: "0 20px 60px rgba(0,0,0,0.28)",
+              }}
+            >
+              <p style={{ color: "rgba(255,255,255,0.66)", marginBottom: "8px" }}>
+                订单总数
+              </p>
+              <h2 style={{ fontWeight: 900, color: "#7df9ff", margin: 0 }}>
+                {orders.length}
+              </h2>
+            </div>
+          </div>
+
+          <div className="col-md-4">
+            <div
+              style={{
+                borderRadius: "22px",
+                padding: "22px",
+                background:
+                  "linear-gradient(180deg, rgba(13,23,44,0.96), rgba(8,14,28,0.96))",
+                border: "1px solid rgba(0,234,255,0.12)",
+                boxShadow: "0 20px 60px rgba(0,0,0,0.28)",
+              }}
+            >
+              <p style={{ color: "rgba(255,255,255,0.66)", marginBottom: "8px" }}>
+                商品数量
+              </p>
+              <h2 style={{ fontWeight: 900, color: "#7df9ff", margin: 0 }}>
+                {totalItems}
+              </h2>
+            </div>
+          </div>
+
+          <div className="col-md-4">
+            <div
+              style={{
+                borderRadius: "22px",
+                padding: "22px",
+                background:
+                  "linear-gradient(180deg, rgba(13,23,44,0.96), rgba(8,14,28,0.96))",
+                border: "1px solid rgba(0,234,255,0.12)",
+                boxShadow: "0 20px 60px rgba(0,0,0,0.28)",
+              }}
+            >
+              <p style={{ color: "rgba(255,255,255,0.66)", marginBottom: "8px" }}>
+                累计消费
+              </p>
+              <h2 style={{ fontWeight: 900, color: "#7df9ff", margin: 0 }}>
+                ¥{totalSpent}
+              </h2>
+            </div>
+          </div>
         </div>
 
         <div
           style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-            gap: "18px",
-            marginBottom: "24px",
+            borderRadius: "24px",
+            padding: "24px",
+            background:
+              "linear-gradient(180deg, rgba(13,23,44,0.96), rgba(8,14,28,0.96))",
+            border: "1px solid rgba(0,234,255,0.12)",
+            boxShadow: "0 20px 60px rgba(0,0,0,0.28)",
           }}
         >
-          <div style={cardStyle}>
-            <UserCircle2 size={22} color="#7df9ff" />
-            <h3 style={titleStyle}>用户信息</h3>
-            <p style={textStyle}>用户名：{user?.username || "-"}</p>
-            <p style={textStyle}>角色：{user?.role || "-"}</p>
+          <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <h3 style={{ margin: 0, fontWeight: 900 }}>我的订单</h3>
+            <span style={{ color: "#7df9ff" }}>最近订单记录</span>
           </div>
 
-          <div style={cardStyle}>
-            <Mail size={22} color="#7df9ff" />
-            <h3 style={titleStyle}>账户状态</h3>
-            <p style={textStyle}>邮箱：已登录账户可见</p>
-            <p style={textStyle}>状态：正常</p>
-          </div>
+          {orders.length === 0 ? (
+            <div
+              style={{
+                borderRadius: "18px",
+                padding: "28px",
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                textAlign: "center",
+                color: "rgba(255,255,255,0.66)",
+              }}
+            >
+              当前没有订单记录
+            </div>
+          ) : (
+            <div className="d-flex flex-column gap-3">
+              {orders.map((order) => (
+                <div
+                  key={order.id}
+                  style={{
+                    borderRadius: "18px",
+                    padding: "18px",
+                    background: "rgba(255,255,255,0.04)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                  }}
+                >
+                  <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                    <div>
+                      <div style={{ fontWeight: 800, color: "#7df9ff" }}>{order.id}</div>
+                      <div style={{ color: "rgba(255,255,255,0.6)", fontSize: "14px" }}>
+                        {new Date(order.createdAt).toLocaleString()}
+                      </div>
+                    </div>
 
-          <div style={cardStyle}>
-            <ShoppingBag size={22} color="#7df9ff" />
-            <h3 style={titleStyle}>我的订单</h3>
-            <p style={textStyle}>订单数量：后续接真实数据</p>
-            <p style={textStyle}>最近订单：待接入</p>
-          </div>
+                    <div className="d-flex align-items-center gap-3 flex-wrap">
+                      <span
+                        style={{
+                          padding: "6px 12px",
+                          borderRadius: "999px",
+                          background: "rgba(103,240,177,0.12)",
+                          color: "#67f0b1",
+                          fontWeight: 800,
+                          fontSize: "13px",
+                        }}
+                      >
+                        已支付
+                      </span>
 
-          <div style={cardStyle}>
-            <ShieldCheck size={22} color="#7df9ff" />
-            <h3 style={titleStyle}>账户安全</h3>
-            <p style={textStyle}>登录方式：邮箱 + 密码</p>
-            <p style={textStyle}>安全等级：基础</p>
-          </div>
-        </div>
+                      <span style={{ fontWeight: 900, fontSize: "18px" }}>
+                        ¥{order.total}
+                      </span>
+                    </div>
+                  </div>
 
-        <div style={bigCardStyle}>
-          <h2 style={{ marginTop: 0 }}>下一步待接入功能</h2>
-          <ul style={{ color: "rgba(230,240,255,0.82)", lineHeight: 1.9, paddingLeft: "18px" }}>
-            <li>我的订单列表</li>
-            <li>支付记录</li>
-            <li>个人资料编辑</li>
-            <li>联系表单记录</li>
-          </ul>
+                  <div className="d-flex flex-column gap-2">
+                    {order.items.map((item, index) => (
+                      <div
+                        key={`${order.id}-${item.id}-${index}`}
+                        className="d-flex justify-content-between align-items-center flex-wrap gap-2"
+                        style={{
+                          padding: "10px 0",
+                          borderTop: "1px solid rgba(255,255,255,0.06)",
+                        }}
+                      >
+                        <div>
+                          <div style={{ fontWeight: 700 }}>{item.name}</div>
+                          <div style={{ color: "rgba(255,255,255,0.6)", fontSize: "14px" }}>
+                            数量：{item.quantity}
+                          </div>
+                        </div>
+
+                        <div style={{ fontWeight: 800 }}>¥{item.price}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div
+                    className="d-flex justify-content-between flex-wrap gap-2 mt-3"
+                    style={{ color: "rgba(255,255,255,0.7)", fontSize: "14px" }}
+                  >
+                    <span>支付方式：{order.paymentMethod || "alipay"}</span>
+                    <span>优惠码：{order.couponCode || "无"}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 }
-
-const cardStyle = {
-  background: "rgba(255,255,255,0.04)",
-  border: "1px solid rgba(0,234,255,0.12)",
-  borderRadius: "20px",
-  padding: "22px",
-  boxShadow: "0 14px 30px rgba(0,0,0,0.24)",
-};
-
-const bigCardStyle = {
-  background: "rgba(255,255,255,0.04)",
-  border: "1px solid rgba(124,58,237,0.16)",
-  borderRadius: "22px",
-  padding: "24px",
-};
-
-const titleStyle = {
-  fontSize: "1.05rem",
-  marginTop: "14px",
-  marginBottom: "10px",
-};
-
-const textStyle = {
-  color: "rgba(220,235,255,0.76)",
-  margin: "4px 0",
-};

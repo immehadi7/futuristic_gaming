@@ -7,6 +7,8 @@ import {
   clearCart,
 } from "../utils/cart";
 import { isAuthenticated } from "../utils/auth";
+import { createOrder } from "../utils/orders";
+
 
 const COUPONS = {
   SAVE10: { type: "percent", value: 10, label: "9折优惠" },
@@ -115,12 +117,14 @@ export default function CheckoutPage() {
     try {
       setLoading(true);
 
-      const payload = {
+      const orderPayload = {
         items: cartItems.map((item) => ({
           id: item.id,
           name: item.name,
-          qty: item.quantity,
-          price: item.price,
+          description: item.description || "",
+          image: item.image || "",
+          quantity: Number(item.quantity || 1),
+          price: Number(item.price || 0),
         })),
         subtotal,
         serviceFee,
@@ -131,12 +135,14 @@ export default function CheckoutPage() {
         currency: "CNY",
       };
 
-      console.log("Alipay payload:", payload);
+      console.log("Alipay payload:", orderPayload);
+
+      const newOrder = createOrder(orderPayload);
 
       await new Promise((resolve) => setTimeout(resolve, 2200));
 
       clearCart();
-      navigate("/payment-result?status=success");
+      navigate(`/payment-result?status=success&orderId=${newOrder.id}`);
     } catch (error) {
       console.error(error);
       alert("支付宝支付发起失败");
