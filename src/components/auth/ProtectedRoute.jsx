@@ -1,5 +1,5 @@
 import { Navigate } from "react-router-dom";
-import { isAuthenticated, getStoredUser } from "../../utils/auth";
+import { isAuthenticated, getUser } from "../../utils/auth";
 
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   if (!isAuthenticated()) {
@@ -7,7 +7,7 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   }
 
   if (allowedRoles.length > 0) {
-    const user = getStoredUser();
+    const user = getUser();
 
     if (!user || !allowedRoles.includes(user.role)) {
       return <Navigate to="/" replace />;

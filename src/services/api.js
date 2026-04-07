@@ -1,16 +1,17 @@
 import axios from "axios";
-import { getStoredToken, clearAuthData } from "../utils/auth";
+import { getToken } from "../utils/auth";
 
 const api = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api",
   headers: {
     "Content-Type": "application/json",
   },
 });
 
+// Attach token automatically
 api.interceptors.request.use(
   (config) => {
-    const token = getStoredToken();
+    const token = getToken();
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -21,11 +22,12 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// Optional: handle global errors (like expired token)
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      clearAuthData();
+    if (error?.response?.status === 401) {
+      console.warn("Unauthorized - token may be expired");
     }
     return Promise.reject(error);
   }

@@ -4,13 +4,16 @@ import MainNavbar from "./components/layout/MainNavbar";
 import HeroCarousel from "./components/HeroCarousel";
 import GameCards from "./components/GameCards";
 import ContactUs from "./components/ContactUs";
-import AuthModal from "./components/auth/authModal";
+import AuthModal from "./components/auth/AuthModal";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import PaymentResultPage from "./pages/PaymentResultPage";
 import ClientDashboardPage from "./pages/ClientDashboardPage";
 import CheckoutPage from "./pages/CheckoutPage";
+import EmployeeDashboard from "./pages/EmployeeDashboard";
+import EmployeeLoginPage from "./pages/EmployeeLoginPage";
 import gamesData from "./data/gamesData";
-import { clearAuthData, getStoredUser } from "./utils/auth";
+import ContactMessages from "./pages/admin/ContactMessages";
+import { logout, getUser } from "./utils/auth";
 
 function HomePage() {
   const [filteredGames, setFilteredGames] = useState(gamesData);
@@ -20,7 +23,7 @@ function HomePage() {
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
-    const savedUser = getStoredUser();
+    const savedUser = getUser();
     if (savedUser) {
       setCurrentUser(savedUser);
     }
@@ -51,7 +54,7 @@ function HomePage() {
   };
 
   const handleLogout = () => {
-    clearAuthData();
+    logout();
     setCurrentUser(null);
     window.location.href = "/";
   };
@@ -98,14 +101,25 @@ export default function App() {
       <Route
         path="/client-dashboard"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["client", "employee", "admin", "super_admin"]}>
             <ClientDashboardPage />
           </ProtectedRoute>
         }
       />
 
+      <Route
+        path="/employee-dashboard"
+        element={
+          <ProtectedRoute allowedRoles={["employee"]}>
+            <EmployeeDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route path="/employee-login" element={<EmployeeLoginPage />} />
       <Route path="/checkout" element={<CheckoutPage />} />
       <Route path="/payment-result" element={<PaymentResultPage />} />
+      <Route path="/admin/contact-messages" element={<ContactMessages />} />
     </Routes>
   );
 }

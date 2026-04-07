@@ -5,18 +5,20 @@ import "./authModal.css";
 
 const AuthModal = ({ show, onClose, mode, setMode, onAuthSuccess }) => {
   const [form, setForm] = useState({
-    name: "",
+    username: "",
     email: "",
     password: "",
   });
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (show) {
       setError("");
+      setSuccessMessage("");
       setForm({
-        name: "",
+        username: "",
         email: "",
         password: "",
       });
@@ -30,22 +32,30 @@ const AuthModal = ({ show, onClose, mode, setMode, onAuthSuccess }) => {
       ...prev,
       [name]: value,
     }));
+
+    if (error) setError("");
+    if (successMessage) setSuccessMessage("");
   };
 
   const validateForm = () => {
-    if (mode === "register" && !form.name.trim()) {
+    if (mode === "register" && !form.username.trim()) {
       return "请输入用户名";
     }
 
     if (!form.email.trim()) {
-      return mode === "login" ? "请输入邮箱或测试账号ID" : "请输入邮箱";
+      return "请输入邮箱";
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.email.trim())) {
+      return "请输入有效邮箱地址";
     }
 
     if (!form.password.trim()) {
       return "请输入密码";
     }
 
-    if (mode === "register" && form.password.trim().length < 6) {
+    if (form.password.trim().length < 6) {
       return "密码至少需要 6 位";
     }
 
@@ -55,6 +65,7 @@ const AuthModal = ({ show, onClose, mode, setMode, onAuthSuccess }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setSuccessMessage("");
 
     const validationError = validateForm();
     if (validationError) {
@@ -65,28 +76,69 @@ const AuthModal = ({ show, onClose, mode, setMode, onAuthSuccess }) => {
     try {
       setLoading(true);
 
-      const data =
-        mode === "login"
-          ? await loginUser({
-              email: form.email.trim(),
-              password: form.password.trim(),
-            })
-          : await registerUser({
-              name: form.name.trim(),
-              email: form.email.trim(),
-              password: form.password.trim(),
-            });
+      let data;
 
-      setAuthData({
-        token: data.token,
-        user: data.user,
+      if (mode === "login") {
+        data = await loginUser({
+          email: form.email.trim().toLowerCase(),
+          password: form.password.trim(),
+        });
+
+        if (data?.token && data?.user) {
+          setAuthData({
+            token: data.token,
+            user: data.user,
+          });
+
+          if (onAuthSuccess) {
+            onAuthSuccess(data.user);
+          }
+
+          onClose();
+          return;
+        }
+
+        setError("登录失败，请重试");
+        return;
+      }
+
+      data = await registerUser({
+        username: form.username.trim(),
+        email: form.email.trim().toLowerCase(),
+        password: form.password.trim(),
+        role: "client",
       });
 
-      if (onAuthSuccess) {
-        onAuthSuccess(data.user);
+      if (data?.token && data?.user) {
+        setAuthData({
+          token: data.token,
+          user: data.user,
+        });
+
+        if (onAuthSuccess) {
+          onAuthSuccess(data.user);
+        }
+
+        onClose();
+        return;
       }
+
+      setSuccessMessage(
+        data?.message || "注册成功，请返回登录"
+      );
+
+      setMode("login");
+      setForm((prev) => ({
+        ...prev,
+        username: "",
+        password: "",
+      }));
     } catch (err) {
-      setError(err?.response?.data?.message || "登录或注册失败");
+      setError(
+        err?.response?.data?.message ||
+          err?.response?.data?.error ||
+          "登录或注册失败"
+      );
     } finally {
       setLoading(false);
     }
@@ -127,9 +179,7 @@ const AuthModal = ({ show, onClose, mode, setMode, onAuthSuccess }) => {
               {mode === "login" ? "用户登录" : "创建账号"}
             </h3>
             <small style={{ color: "rgba(255,255,255,0.65)" }}>
-              {mode === "login"
-                ? "测试账号：testclient / client@12345"
-                : "注册新客户账号"}
+              {mode === "login" ? "请输入邮箱和密码登录" : "注册新的客户账号"}
             </small>
           </div>
 
@@ -187,10 +237,10 @@ const AuthModal = ({ show, onClose, mode, setMode, onAuthSuccess }) => {
         <form onSubmit={handleSubmit}>
           {mode === "register" && (
             <input
-              name="name"
+              name="username"
               type="text"
               placeholder="请输入用户名"
-              value={form.name}
+              value={form.username}
               onChange={handleChange}
               style={{
                 width: "100%",
@@ -207,8 +257,8 @@ const AuthModal = ({ show, onClose, mode, setMode, onAuthSuccess }) => {
 
           <input
             name="email"
-            type="text"
-            placeholder={mode === "login" ? "请输入邮箱或 testclient" : "请输入邮箱"}
+            type="email"
+            placeholder="请输入邮箱"
             value={form.email}
             onChange={handleChange}
             style={{
@@ -241,26 +291,50 @@ const AuthModal = ({ show, onClose, mode, setMode, onAuthSuccess }) => {
             }}
           />
 
-          {error && (
-            <p style={{ color: "#fb7185", marginBottom: "12px" }}>{error}</p>
-          )}
+          {error ? (
+            <div
+              style={{
+                color: "#ff8ea1",
+                marginBottom: "12px",
+                fontSize: "14px",
+              }}
+            >
+              {error}
+            </div>
+          ) : null}
+
+          {successMessage ? (
+            <div
+              style={{
+                color: "#7df9b6",
+                marginBottom: "12px",
+                fontSize: "14px",
+              }}
+            >
+              {successMessage}
+            </div>
+          ) : null}
 
           <button
             type="submit"
             disabled={loading}
             style={{
               width: "100%",
-              padding: "13px",
+              padding: "13px 14px",
               borderRadius: "12px",
               border: "none",
-              cursor: "pointer",
-              background: "linear-gradient(135deg, #06b6d4, #22d3ee)",
-              color: "#fff",
-              fontWeight: 700,
-              boxShadow: "0 10px 25px rgba(6,182,212,0.28)",
+              background: "linear-gradient(135deg, #00eaff, #67e8f9)",
+              color: "#081018",
+              fontWeight: 800,
+              cursor: loading ? "not-allowed" : "pointer",
+              opacity: loading ? 0.7 : 1,
             }}
           >
-            {loading ? "处理中..." : mode === "login" ? "登录" : "注册"}
+            {loading
+              ? "处理中..."
+              : mode === "login"
+              ? "立即登录"
+              : "立即注册"}
           </button>
         </form>
       </div>

@@ -1,32 +1,39 @@
-export const getStoredToken = () => {
-  return localStorage.getItem("token");
+const TOKEN_KEY = "token";
+const USER_KEY = "user";
+
+export const setAuthData = ({ token, user }) => {
+  if (token) {
+    localStorage.setItem(TOKEN_KEY, token);
+  }
+
+  if (user) {
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+  }
 };
 
-export const getStoredUser = () => {
-  const user = localStorage.getItem("user");
+export const getToken = () => {
+  return localStorage.getItem(TOKEN_KEY);
+};
 
+export const getUser = () => {
   try {
-    return user ? JSON.parse(user) : null;
+    const raw = localStorage.getItem(USER_KEY);
+    return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
   }
 };
 
-export const setAuthData = ({ token, user }) => {
-  if (token) {
-    localStorage.setItem("token", token);
-  }
-
-  if (user) {
-    localStorage.setItem("user", JSON.stringify(user));
-  }
-};
-
-export const clearAuthData = () => {
-  localStorage.removeItem("token");
-  localStorage.removeItem("user");
+export const getUserRole = () => {
+  const user = getUser();
+  return user?.role || null;
 };
 
 export const isAuthenticated = () => {
-  return !!getStoredToken();
+  return !!getToken();
+};
+
+export const logout = () => {
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(USER_KEY);
 };

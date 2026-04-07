@@ -1,0 +1,227 @@
+:root {
+  --cm-cyan: #00f5ff;
+  --cm-red: #ff2244;
+  --cm-orange: #ff6b00;
+  --cm-bg: #050810;
+  --cm-panel: rgba(10, 15, 30, 0.92);
+  --cm-border: rgba(0, 245, 255, 0.18);
+  --cm-text: #e8eeff;
+  --cm-muted: rgba(180, 200, 255, 0.6);
+}
+
+.cm-wrapper {
+  min-height: 100vh;
+  background: var(--cm-bg);
+  position: relative;
+  overflow: hidden;
+  color: var(--cm-text);
+  font-family: "Rajdhani", sans-serif;
+}
+
+.cm-grid-bg {
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0, 245, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 245, 255, 0.04) 1px, transparent 1px);
+  background-size: 50px 50px;
+  pointer-events: none;
+}
+
+.cm-header {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 28px;
+}
+
+.cm-eyebrow {
+  color: var(--cm-cyan);
+  letter-spacing: 0.25em;
+  font-size: 0.8rem;
+  margin-bottom: 10px;
+  font-family: "Orbitron", monospace;
+}
+
+.cm-title {
+  font-size: clamp(2rem, 4vw, 3rem);
+  margin: 0 0 8px;
+  font-family: "Orbitron", monospace;
+}
+
+.cm-subtitle {
+  margin: 0;
+  color: var(--cm-muted);
+}
+
+.cm-stats {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.cm-filter-btn {
+  background: rgba(0, 245, 255, 0.06);
+  border: 1px solid var(--cm-border);
+  color: var(--cm-text);
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-weight: 600;
+  transition: 0.25s ease;
+}
+
+.cm-filter-btn:hover,
+.cm-filter-btn.active {
+  border-color: rgba(0, 245, 255, 0.5);
+  color: var(--cm-cyan);
+  box-shadow: 0 0 18px rgba(0, 245, 255, 0.15);
+}
+
+.cm-list {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 18px;
+}
+
+.cm-card,
+.cm-empty-card {
+  background: var(--cm-panel);
+  border: 1px solid var(--cm-border);
+  border-radius: 18px;
+  padding: 22px;
+  box-shadow: 0 0 30px rgba(0, 245, 255, 0.06);
+}
+
+.cm-card-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.cm-name {
+  margin: 0 0 4px;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.cm-email {
+  margin: 0;
+  color: var(--cm-cyan);
+  word-break: break-all;
+}
+
+.cm-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  color: var(--cm-muted);
+  font-size: 0.95rem;
+  margin-bottom: 16px;
+}
+
+.cm-message-box {
+  background: rgba(0, 245, 255, 0.04);
+  border: 1px solid rgba(0, 245, 255, 0.12);
+  border-radius: 12px;
+  padding: 16px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  margin-bottom: 16px;
+}
+
+.cm-status {
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.cm-status-new {
+  color: #fff;
+  background: linear-gradient(135deg, #ff2244, #ff6b00);
+}
+
+.cm-status-read {
+  color: #00151a;
+  background: #7ff6ff;
+}
+
+.cm-status-replied {
+  color: #04120a;
+  background: #55ff9d;
+}
+
+.cm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.cm-action-btn {
+  border: 1px solid rgba(0, 245, 255, 0.18);
+  background: rgba(0, 245, 255, 0.06);
+  color: var(--cm-text);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-weight: 600;
+  transition: 0.25s ease;
+}
+
+.cm-action-btn:hover {
+  border-color: rgba(0, 245, 255, 0.45);
+  color: var(--cm-cyan);
+}
+
+.cm-action-btn.danger {
+  border-color: rgba(255, 34, 68, 0.35);
+  background: rgba(255, 34, 68, 0.08);
+  color: #ff8ca0;
+}
+
+.cm-action-btn.danger:hover {
+  border-color: rgba(255, 34, 68, 0.7);
+  color: #fff;
+}
+
+.cm-empty-card {
+  text-align: center;
+  padding: 56px 20px;
+}
+
+.cm-empty-icon {
+  font-size: 2rem;
+  color: var(--cm-cyan);
+  margin-bottom: 10px;
+}
+
+.cm-empty-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.cm-empty-sub {
+  color: var(--cm-muted);
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .cm-card-top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .cm-actions {
+    flex-direction: column;
+  }
+
+  .cm-action-btn {
+    width: 100%;
+  }
+}

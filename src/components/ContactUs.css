@@ -1,11 +1,4 @@
-/* ═══════════════════════════════════════════
-   CONTACT US — GAMING / FUTURISTIC THEME
-   Font: Orbitron (display) + Rajdhani (body)
-   Add to index.html or index.css:
-   @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
-═══════════════════════════════════════════ */
 
-/* ── Root vars ── */
 :root {
   --neon-cyan: #00f5ff;
   --neon-red: #ff2244;
@@ -593,4 +586,45 @@
 @media (max-width: 576px) {
   .ctu-title { font-size: 2rem; }
   .ctu-form { padding: 20px 16px 24px; }
+}
+.ctu-input-error {
+  border-color: rgba(255, 34, 68, 0.85) !important;
+  box-shadow: 0 0 0 3px rgba(255, 34, 68, 0.12) !important;
+}
+
+.ctu-error-text {
+  margin-top: 6px;
+  color: #ff6b7a;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.ctu-submit-error {
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 34, 68, 0.35);
+  background: rgba(255, 34, 68, 0.08);
+  color: #ff9aaa;
+  border-radius: 10px;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.ctu-input-error {
+  border-color: rgba(255, 34, 68, 0.9) !important;
+  box-shadow: 0 0 0 3px rgba(255, 34, 68, 0.12) !important;
+}
+
+.ctu-error-text {
+  margin: 6px 0 0;
+  color: #ff6b7d;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.ctu-submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none !important;
 }

@@ -7,8 +7,7 @@ import {
   clearCart,
 } from "../utils/cart";
 import { isAuthenticated } from "../utils/auth";
-import { createOrder } from "../utils/orders";
-
+import { createOrder } from "../services/orderService";
 
 const COUPONS = {
   SAVE10: { type: "percent", value: 10, label: "9折优惠" },
@@ -119,7 +118,7 @@ export default function CheckoutPage() {
 
       const orderPayload = {
         items: cartItems.map((item) => ({
-          id: item.id,
+          product_id: item.id,
           name: item.name,
           description: item.description || "",
           image: item.image || "",
@@ -127,25 +126,21 @@ export default function CheckoutPage() {
           price: Number(item.price || 0),
         })),
         subtotal,
-        serviceFee,
+        service_fee: serviceFee,
         discount: finalDiscount,
         total,
-        couponCode: couponInput.trim().toUpperCase() || null,
-        paymentMethod: "alipay",
-        currency: "CNY",
+        coupon_code: couponInput.trim().toUpperCase() || "",
+        payment_method: "alipay",
       };
 
-      console.log("Alipay payload:", orderPayload);
-
-      const newOrder = createOrder(orderPayload);
-
-      await new Promise((resolve) => setTimeout(resolve, 2200));
+      const result = await createOrder(orderPayload);
+      const orderId = result?.data?.id;
 
       clearCart();
-      navigate(`/payment-result?status=success&orderId=${newOrder.id}`);
+      navigate(`/payment-result?status=success&orderId=${orderId}`);
     } catch (error) {
       console.error(error);
-      alert("支付宝支付发起失败");
+      alert(error?.response?.data?.message || "支付宝支付发起失败");
     } finally {
       setLoading(false);
     }
@@ -310,14 +305,6 @@ export default function CheckoutPage() {
               cursor: "pointer",
               boxShadow: "0 10px 24px rgba(0,0,0,0.25)",
               transition: "0.25s ease",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = "rotate(90deg) scale(1.05)";
-              e.currentTarget.style.background = "rgba(0,234,255,0.14)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = "rotate(0deg) scale(1)";
-              e.currentTarget.style.background = "rgba(255,255,255,0.06)";
             }}
           >
             ×
@@ -672,84 +659,9 @@ export default function CheckoutPage() {
                     transition: "0.25s ease",
                     marginBottom: "16px",
                   }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = "translateY(-2px) scale(1.01)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = "translateY(0) scale(1)";
-                  }}
                 >
                   支付宝支付
                 </button>
-
-                <div
-                  style={{
-                    borderRadius: "20px",
-                    padding: "18px",
-                    background:
-                      "linear-gradient(180deg, rgba(8,18,36,0.9), rgba(6,12,24,0.9))",
-                    border: "1px solid rgba(22,119,255,0.22)",
-                    textAlign: "center",
-                  }}
-                >
-                  <p
-                    style={{
-                      marginBottom: "12px",
-                      color: "#8fc6ff",
-                      fontWeight: 700,
-                    }}
-                  >
-                    支付宝扫码支付
-                  </p>
-
-                  <div
-                    style={{
-                      width: "180px",
-                      height: "180px",
-                      margin: "0 auto 12px",
-                      borderRadius: "18px",
-                      background:
-                        "repeating-linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0.1) 8px, rgba(255,255,255,0.02) 8px, rgba(255,255,255,0.02) 16px)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      border: "1px solid rgba(255,255,255,0.12)",
-                      boxShadow: "inset 0 0 30px rgba(22,119,255,0.12)",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: "140px",
-                        height: "140px",
-                        borderRadius: "12px",
-                        background:
-                          "linear-gradient(180deg, rgba(255,255,255,0.95), rgba(230,240,255,1))",
-                        color: "#1677ff",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontWeight: 900,
-                        textAlign: "center",
-                        padding: "12px",
-                        lineHeight: 1.3,
-                      }}
-                    >
-                      Alipay
-                      <br />
-                      Scanner
-                    </div>
-                  </div>
-
-                  <p
-                    style={{
-                      margin: 0,
-                      fontSize: "13px",
-                      color: "rgba(255,255,255,0.62)",
-                    }}
-                  >
-                    后续接入真实支付宝二维码后，这里可替换为动态扫码图。
-                  </p>
-                </div>
               </div>
             </div>
           </div>
