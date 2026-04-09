@@ -1,0 +1,465 @@
+.fg-section {
+  position: relative;
+  padding: 80px 0;
+  background:
+    radial-gradient(circle at top left, rgba(0, 229, 255, 0.05), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(0, 255, 136, 0.04), transparent 24%),
+    #0a0f1e;
+  color: #ffffff;
+  overflow: hidden;
+}
+
+.fg-section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 26px 26px;
+  opacity: 0.28;
+  pointer-events: none;
+}
+
+.fg-section .container {
+  position: relative;
+  z-index: 2;
+}
+
+.fg-section-heading {
+  text-align: center;
+  margin-bottom: 42px;
+}
+
+.fg-section-heading h2 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #ffffff;
+}
+
+.fg-underline {
+  width: 68px;
+  height: 4px;
+  margin: 12px auto 12px;
+  background: #00e5ff;
+  border-radius: 4px;
+  box-shadow: 0 0 14px rgba(0, 229, 255, 0.45);
+}
+
+.fg-section-heading p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.92rem;
+}
+
+.fg-card {
+  height: 100%;
+  background: #0d1526;
+  border: 1px solid rgba(0, 229, 255, 0.12);
+  border-radius: 8px;
+  box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.02), 0 12px 28px rgba(0, 0, 0, 0.28);
+  transition: all 0.25s ease;
+}
+
+.fg-card:hover {
+  border-color: rgba(0, 229, 255, 0.28);
+}
+
+.fg-stat-card {
+  padding: 26px 20px;
+  border-top: 3px solid #00e5ff;
+  text-align: center;
+}
+
+.fg-stat-number {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 8px;
+  text-shadow: 0 0 16px rgba(0, 229, 255, 0.12);
+}
+
+.fg-stat-label {
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.fg-stat-subtitle {
+  margin-top: 6px;
+  font-size: 0.84rem;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.fg-trust-badges {
+  margin-top: 28px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+
+.fg-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 0.84rem;
+  line-height: 1;
+  transition: all 0.25s ease;
+}
+
+.fg-pill-main {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.fg-pill-sub {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.76rem;
+}
+
+.badge-alipay {
+  background: #1677ff;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.badge-green {
+  background: rgba(0, 255, 136, 0.12);
+  color: #00ff88;
+  border: 1px solid rgba(0, 255, 136, 0.24);
+}
+
+.badge-outline {
+  background: transparent;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.fg-review-card {
+  padding: 22px;
+}
+
+.fg-review-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(0, 229, 255, 0.4);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.34);
+}
+
+.fg-stars {
+  display: flex;
+  gap: 5px;
+  color: #ffb800;
+  margin-bottom: 14px;
+}
+
+.fg-review-text {
+  color: #ffffff;
+  font-size: 0.98rem;
+  line-height: 1.7;
+  min-height: 66px;
+  margin-bottom: 18px;
+}
+
+.fg-review-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.fg-review-user {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.88rem;
+}
+
+.fg-game-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  background: rgba(0, 229, 255, 0.1);
+  color: #00e5ff;
+  border: 1px solid rgba(0, 229, 255, 0.24);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.fg-review-summary {
+  margin-top: 22px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.92rem;
+}
+
+.fg-social-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 22px 18px;
+  transform: scale(1);
+}
+
+.fg-social-card:hover {
+  transform: scale(1.02);
+}
+
+.fg-social-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.04);
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.fg-social-name {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 4px;
+}
+
+.fg-social-handle {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.85rem;
+}
+
+.social-wechat {
+  border-left: 3px solid #07c160;
+}
+
+.social-qq {
+  border-left: 3px solid #12b7f5;
+}
+
+.social-bilibili {
+  border-left: 3px solid #fb7299;
+}
+
+.social-weibo {
+  border-left: 3px solid #e6162d;
+}
+
+.social-wechat:hover {
+  border-color: #07c160;
+}
+
+.social-qq:hover {
+  border-color: #12b7f5;
+}
+
+.social-bilibili:hover {
+  border-color: #fb7299;
+}
+
+.social-weibo:hover {
+  border-color: #e6162d;
+}
+
+.fg-social-caption {
+  margin: 22px 0 0;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.fg-faq-wrap {
+  max-width: 760px;
+  margin: 0 auto;
+  background: transparent;
+}
+
+.fg-faq-item {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.25s ease;
+}
+
+.fg-faq-item.active {
+  border-left: 3px solid #00e5ff;
+  padding-left: 14px;
+}
+
+.fg-faq-question {
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 18px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.fg-faq-chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.65);
+  transition: transform 0.25s ease;
+}
+
+.fg-faq-chevron.rotate {
+  transform: rotate(180deg);
+}
+
+.fg-faq-answer-wrap {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.fg-faq-answer-wrap.open {
+  max-height: 180px;
+}
+
+.fg-faq-answer {
+  padding: 0 0 18px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.fg-footer {
+  background: #060b16;
+  border-top: 1px solid rgba(0, 229, 255, 0.15);
+  color: #ffffff;
+}
+
+.fg-footer-top {
+  padding: 54px 0 42px;
+}
+
+.fg-footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.fg-footer-logo {
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.18), rgba(0, 255, 136, 0.12));
+  border: 1px solid rgba(0, 229, 255, 0.18);
+  color: #00e5ff;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.fg-footer-brand h3 {
+  margin: 0 0 4px;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.fg-footer-brand p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 0.85rem;
+}
+
+.fg-footer-text {
+  max-width: 420px;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.8;
+  margin-bottom: 18px;
+}
+
+.fg-footer-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.fg-footer-title {
+  margin: 6px 0 16px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.fg-footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.fg-footer-links li + li {
+  margin-top: 10px;
+}
+
+.fg-footer-links a {
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: none;
+  transition: all 0.25s ease;
+}
+
+.fg-footer-links a:hover {
+  color: #00e5ff;
+}
+
+.fg-footer-bottom {
+  background: #050914;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.fg-footer-bottom-inner {
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 0.82rem;
+}
+
+@media (max-width: 991.98px) {
+  .fg-stat-number {
+    font-size: 1.8rem;
+  }
+
+  .fg-footer-bottom-inner {
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    padding: 14px 0;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .fg-section {
+    padding: 64px 0;
+  }
+
+  .fg-section-heading h2 {
+    font-size: 1.65rem;
+  }
+
+  .fg-review-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .fg-pill {
+    width: 100%;
+  }
+}

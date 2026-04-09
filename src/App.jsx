@@ -14,7 +14,11 @@ import EmployeeLoginPage from "./pages/EmployeeLoginPage";
 import gamesData from "./data/gamesData";
 import ContactMessages from "./pages/admin/ContactMessages";
 import { logout, getUser } from "./utils/auth";
-
+import PlatformStats from "../src/components/home/PlatformStats";
+import PlayerReviews from "../src/components/home/PlayerReviews";
+import SocialLinks from "../src/components/home/SocialLinks";
+import FAQSection from "../src/components/home/FAQSection";
+import SiteFooter from "../src/components/home/SiteFooter";
 function HomePage() {
   const [filteredGames, setFilteredGames] = useState(gamesData);
   const [searchTerm, setSearchTerm] = useState("");
@@ -89,6 +93,11 @@ function HomePage() {
         setMode={setAuthTab}
         onAuthSuccess={handleAuthSuccess}
       />
+      <PlatformStats />
+<PlayerReviews />
+<SocialLinks />
+<FAQSection />
+<SiteFooter />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Container, Row, Col, Form, Button } from "react-bootstrap";
+import { io } from "socket.io-client";
 import "./ContactUs.css";
 
 import robotImg from "../assets/robot.png";
@@ -9,15 +10,6 @@ import {
   validateContactForm,
 } from "../utils/contactSubmission";
 import { submitContactForm } from "../services/contactService";
-
-const CHAT_RESPONSES = [
-  "你好，玩家！今天有什么可以帮到你的吗？🎮",
-  "好问题！让我来为您查找一下...",
-  "我们的客服团队将在24小时内与您联系。还有其他问题吗？",
-  "您也可以查看我们的常见问题页面获取快速解答！",
-  "明白了！还有什么我可以帮到您的吗？",
-  "正在为您接通客服团队，请稍候...",
-];
 
 const INITIAL_FORM = {
   firstName: "",
@@ -32,6 +24,9 @@ const INITIAL_ERRORS = {
   message: "",
 };
 
+const SOCKET_URL =
+  import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
+
 export default function ContactUs() {
   const [chatOpen, setChatOpen] = useState(false);
   const [chatMinimized, setChatMinimized] = useState(false);
@@ -43,6 +38,7 @@ export default function ContactUs() {
   ]);
   const [inputVal, setInputVal] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [isSocketConnected, setIsSocketConnected] = useState(false);
 
   const [formData, setFormData] = useState(INITIAL_FORM);
   const [formErrors, setFormErrors] = useState(INITIAL_ERRORS);
@@ -52,6 +48,7 @@ export default function ContactUs() {
 
   const [glitch, setGlitch] = useState(false);
   const messagesEndRef = useRef(null);
+  const socketRef = useRef(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -66,24 +63,72 @@ export default function ContactUs() {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    const socket = io(SOCKET_URL, {
+      transports: ["websocket", "polling"],
+      withCredentials: true,
+      autoConnect: true,
+    });
+
+    socketRef.current = socket;
+
+    socket.on("connect", () => {
+      setIsSocketConnected(true);
+    });
+
+    socket.on("disconnect", () => {
+      setIsSocketConnected(false);
+    });
+
+    socket.on("ai_typing", () => {
+      setIsTyping(true);
+    });
+
+    socket.on("ai_reply", (data) => {
+      setMessages((prev) => [
+        ...prev,
+        {
+          from: "bot",
+          text: data?.message || "系统暂时无法响应，请稍后再试。",
+        },
+      ]);
+      setIsTyping(false);
+    });
+
+    socket.on("connect_error", () => {
+      setIsSocketConnected(false);
+      setIsTyping(false);
+    });
+
+    return () => {
+      socket.off("connect");
+      socket.off("disconnect");
+      socket.off("ai_typing");
+      socket.off("ai_reply");
+      socket.off("connect_error");
+      socket.disconnect();
+    };
+  }, []);
+
   const sendMessage = () => {
     const trimmed = inputVal.trim();
     if (!trimmed) return;
 
     setMessages((prev) => [...prev, { from: "user", text: trimmed }]);
     setInputVal("");
-    setIsTyping(true);
 
-    setTimeout(() => {
+    if (!socketRef.current || !socketRef.current.connected) {
       setMessages((prev) => [
         ...prev,
         {
           from: "bot",
-          text: CHAT_RESPONSES[Math.floor(Math.random() * CHAT_RESPONSES.length)],
+          text: "⚠️ 当前客服连接中断，请稍后再试。",
         },
       ]);
-      setIsTyping(false);
-    }, 1200);
+      return;
+    }
+
+    socketRef.current.emit("user_message", { message: trimmed });
   };
 
   const handleInputChange = (e) => {
@@ -307,7 +352,9 @@ export default function ContactUs() {
                 <h3 className="ctu-bot-name">
                   NEXUS <span className="ctu-online-dot" />
                 </h3>
-                <p className="ctu-bot-role">AI 客服助手 · 全天24小时在线</p>
+                <p className="ctu-bot-role">
+                  AI 客服助手 · {isSocketConnected ? "全天24小时在线" : "连接中..."}
+                </p>
               </div>
 
               <div className="ctu-bot-features">
@@ -347,7 +394,8 @@ export default function ContactUs() {
               <div>
                 <p className="ctu-chat-name">NEXUS</p>
                 <p className="ctu-chat-status">
-                  <span className="ctu-online-dot sm" /> 在线
+                  <span className="ctu-online-dot sm" />
+                  {isSocketConnected ? " 在线" : " 连接中"}
                 </p>
               </div>
             </div>
@@ -405,4 +453,3 @@ export default function ContactUs() {
     </div>
   );
 }
-
